@@ -42,3 +42,6 @@ htmlcov/*
 
 .tox
 pip-wheel-metadata/
+
+# 忽略 venv
+venv/

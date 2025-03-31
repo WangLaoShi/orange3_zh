@@ -109,7 +109,7 @@ class Learner(ReprableWithPreprocessors):
     # pylint: disable=R0201
     def fit(self, X, Y, W=None):
         raise RuntimeError(
-            "Descendants of Learner must overload method fit or fit_storage")
+            "继承自 Learner 的类必须实现 fit 或 fit_storage 方法。")
 
     def fit_storage(self, data):
         """Default implementation of fit_storage defaults to calling fit.
@@ -130,23 +130,20 @@ class Learner(ReprableWithPreprocessors):
 
         if progress_callback is None:
             progress_callback = dummy_callback
-        progress_callback(0, "Preprocessing...")
+        progress_callback(0, "预处理中....")
         try:
             cb = wrap_callback(progress_callback, end=0.1)
             data = self.preprocess(data, progress_callback=cb)
         except TypeError:
             data = self.preprocess(data)
-            warnings.warn("A keyword argument 'progress_callback' has been "
-                          "added to the preprocess() signature. Implementing "
-                          "the method without the argument is deprecated and "
-                          "will result in an error in the future.",
+            warnings.warn(("关键字参数 'progress_callback' 已被" + ("添加到 preprocess() 的函数签名中。若实现" + ("该方法时未包含此参数，将会被弃用，" + "并在未来导致错误。"))),
                           OrangeDeprecationWarning)
 
         if len(data.domain.class_vars) > 1 and not self.supports_multiclass:
-            raise TypeError("%s doesn't support multiple class variables" %
+            raise TypeError("%s 不支持多个类变量" %
                             self.__class__.__name__)
 
-        progress_callback(0.1, "Fitting...")
+        progress_callback(0.1, "训练中...")
         model = self._fit_model(data)
         model.used_vals = [np.unique(y).astype(int) for y in data.Y[:, None].T]
         if not hasattr(model, "domain") or model.domain is None:
@@ -239,7 +236,7 @@ class Model(Reprable):
 
     def predict(self, X):
         if type(self).predict_storage is Model.predict_storage:
-            raise TypeError("Descendants of Model must overload method predict")
+            raise TypeError("继承自 Model 的类必须实现 predict 方法。")
         else:
             Y = np.zeros((len(X), len(self.domain.class_vars)))
             Y[:] = np.nan
@@ -251,7 +248,7 @@ class Model(Reprable):
             return self.predict(data.X)
         elif isinstance(data, Instance):
             return self.predict(np.atleast_2d(data.x))
-        raise TypeError("Unrecognized argument (instance of '{}')"
+        raise TypeError("未识别的参数（对象类型：'{}'）"
                         .format(type(data).__name__))
 
     def get_backmappers(self, data):
@@ -264,18 +261,15 @@ class Model(Reprable):
             return None, []  # classless model or data; don't touch
         if len(dataclasses) != len(modelclasses):
             raise DomainTransformationError(
-                "Mismatching number of model's classes and data classes")
+                "模型的类别数量与数据的类别数量不匹配")
         for dataclass, modelclass in zip(dataclasses, modelclasses):
             if dataclass != modelclass:
                 if dataclass.name != modelclass.name:
                     raise DomainTransformationError(
-                        f"Model for '{modelclass.name}' "
-                        f"cannot predict '{dataclass.name}'")
+                        (f"用于 '{modelclass.name}' 的模型" + f"无法预测 '{dataclass.name}'"))
                 else:
                     raise DomainTransformationError(
-                        f"Variables '{modelclass.name}' in the model is "
-                        "incompatible with the variable of the same name "
-                        "in the data.")
+                        (f"模型中的变量 '{modelclass.name}' " + ("与数据中同名变量不兼容。" + "")))
             n_values.append(dataclass.is_discrete and len(dataclass.values))
             if dataclass is not modelclass and dataclass.is_discrete:
                 backmappers.append(dataclass.get_mapper_from(modelclass))
@@ -376,7 +370,7 @@ class Model(Reprable):
             new_data = data.transform(self.original_domain)
             if all_nan(new_data.X):
                 raise DomainTransformationError(
-                    "domain transformation produced no defined values")
+                    "特征空间(域)转换后没有产生任何已定义的值。")
             progress_callback(0.75)
             data = new_data.transform(self.domain)
             progress_callback(1)
@@ -432,9 +426,9 @@ class Model(Reprable):
             return x[0] if one_d else x
 
         if not 0 <= ret <= 2:
-            raise ValueError("invalid value of argument 'ret'")
+            raise ValueError("参数 'ret' 的值无效")
         if ret > 0 and any(v.is_continuous for v in self.domain.class_vars):
-            raise ValueError("cannot predict continuous distributions")
+            raise ValueError("无法预测连续型分布")
 
         # Convert 1d structures to 2d and remember doing it
         one_d = True
@@ -466,7 +460,7 @@ class Model(Reprable):
             data = data.transform(self.domain)
             prediction = self.predict_storage(data)
         else:
-            raise TypeError("Unrecognized argument (instance of '{}')"
+            raise TypeError("无法识别的参数（类型为 '{}'）"
                             .format(type(data).__name__))
 
         # Parse the result into value and probs
@@ -477,7 +471,7 @@ class Model(Reprable):
         elif prediction.ndim == 2 + multitarget:
             value, probs = None, prediction
         else:
-            raise TypeError(f"model returned a {prediction.ndim}-dimensional array")
+            raise TypeError(f"模型返回了一个 {prediction.ndim} 维的数组")
 
         # Ensure that we have what we need to return; backmap everything
         if probs is None and (ret != Model.Value or backmappers is not None):
@@ -574,7 +568,7 @@ class SklLearner(Learner, metaclass=WrapperMeta):
                 name: values[name] for name in spec[1:] if name in values
             }
         else:
-            raise TypeError("Wrapper does not define '__wraps__'")
+            raise TypeError("包装器未定义 'wraps' 属性")
         return params
 
     def preprocess(self, data, progress_callback=None):
@@ -582,8 +576,8 @@ class SklLearner(Learner, metaclass=WrapperMeta):
 
         if any(v.is_discrete and len(v.values) > 2
                for v in data.domain.attributes):
-            raise ValueError("Wrapped scikit-learn methods do not support " +
-                             "multinomial variables.")
+            raise ValueError("包装后的 scikit-learn 方法不支持多项变量（通常指多类别分类变量，如 Softmax 分类）。" +
+                             "")
 
         return data
 
@@ -607,9 +601,7 @@ class SklLearner(Learner, metaclass=WrapperMeta):
     def supports_weights(self):
         """Indicates whether this learner supports weighted instances.
         """
-        warnings.warn('SklLearner.supports_weights property is deprecated. All '
-                      'subclasses should redefine the supports_weights attribute. '
-                      'The property will be removed in 3.39.',
+        warnings.warn(('SklLearner.supports_weights 属性已被弃用，所有子类应重新定义 supports_weights 属性。该属性将在 3.39 版本中移除。' + ('' + '')),
                       OrangeDeprecationWarning)
         varnames = self.__wraps__.fit.__code__.co_varnames
         # scikit-learn often uses decorators on fit()

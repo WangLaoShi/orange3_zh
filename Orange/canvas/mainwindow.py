@@ -16,7 +16,7 @@ class OUserSettingsDialog(UserSettingsDialog):
         w = self.widget(0)  # 'General' tab
         layout = w.layout()
         assert isinstance(layout, QFormLayout)
-        cb = QCheckBox(self.tr("Automatically check for updates"))
+        cb = QCheckBox(self.tr("自动检查更新"))
         cb.setAttribute(Qt.WA_LayoutUsesWidgetRect)
 
         layout.addRow("Updates", cb)
@@ -24,8 +24,8 @@ class OUserSettingsDialog(UserSettingsDialog):
 
         # Reporting Tab
         tab = QWidget()
-        self.addTab(tab, self.tr("Reporting"),
-                    toolTip="Settings related to reporting")
+        self.addTab(tab, self.tr("报告设置"),
+                    toolTip="报告功能相关设置")
 
         form = FormLayout()
         line_edit_mid = QLineEdit()
@@ -45,10 +45,7 @@ class OUserSettingsDialog(UserSettingsDialog):
         layout.addWidget(cb1)
         box.setLayout(layout)
         form.addRow(self.tr("Anonymous Statistics"), box)
-        label = QLabel("<a "
-                       "href=\"https://orange.biolab.si/statistics-more-info\">"
-                       "More info..."
-                       "</a>")
+        label = QLabel(("<a " + ("href=\"https://orange.biolab.si/statistics-more-info\">" + ("More info..." + "</a>"))))
         label.setOpenExternalLinks(True)
         form.addRow(self.tr(""), label)
 
@@ -79,17 +76,12 @@ class OUserSettingsDialog(UserSettingsDialog):
         notifs.layout().setContentsMargins(0, 0, 0, 0)
 
         cb1 = QCheckBox(self.tr("Announcements"), self,
-                        toolTip="Show notifications about Biolab announcements.\n"
-                                "This entails events and courses hosted by the developers of "
-                                "Orange.")
+                        toolTip=("Show notifications about Biolab announcements.\n" + ("This entails events and courses hosted by the developers of " + "Orange.")))
 
         cb2 = QCheckBox(self.tr("Blog posts"), self,
-                        toolTip="Show notifications about blog posts.\n"
-                                "We'll only send you the highlights.")
+                        toolTip=("Show notifications about blog posts.\n" + "We'll only send you the highlights."))
         cb3 = QCheckBox(self.tr("New features"), self,
-                        toolTip="Show notifications about new features in Orange when a new "
-                                "version is downloaded and installed,\n"
-                                "should the new version entail notable updates.")
+                        toolTip=("Show notifications about new features in Orange when a new " + ("version is downloaded and installed,\n" + "should the new version entail notable updates.")))
 
         self.bind(cb1, "checked", "notifications/announcements")
         self.bind(cb2, "checked", "notifications/blog")

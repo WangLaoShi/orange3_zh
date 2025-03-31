@@ -96,7 +96,7 @@ def check_for_updates():
                     contents = urlopen(request, timeout=10).read().decode()
                 # Nothing that this fails with should make Orange crash
                 except Exception:  # pylint: disable=broad-except
-                    log.exception('Failed to check for updates')
+                    log.exception('检查更新失败')
                 else:
                     self.resultReady.emit(contents)
 
@@ -106,11 +106,10 @@ def check_for_updates():
                     latest == skipped:
                 return
 
-            notif = Notification(title='Orange Update Available',
-                                 text='Current version: <b>{}</b><br>'
-                                      'Latest version: <b>{}</b>'.format(current, latest),
-                                 accept_button_label="Download",
-                                 reject_button_label="Skip this Version",
+            notif = Notification(title='Orange 有新版本可用',
+                                 text=('当前版本: <b>{}</b><br>' + '最新版本: <b>{}</b>').format(current, latest),
+                                 accept_button_label="下载",
+                                 reject_button_label="跳过该版本",
                                  icon=QIcon(resource_filename("canvas/icons/update.png")))
 
             def handle_click(role):
@@ -216,7 +215,7 @@ def pull_notifications():
                 contents = urlopen(request, timeout=10).read().decode()
             # Nothing that this fails with should make Orange crash
             except Exception:  # pylint: disable=broad-except
-                log.warning('Failed to pull notification feed')
+                log.warning('拉取通知源失败')
             else:
                 self.resultReady.emit(contents)
 
@@ -295,10 +294,10 @@ def send_usage_statistics():
         settings = QSettings()
         if not settings.value("reporting/send-statistics", False,
                               type=bool):
-            log.info("Not sending usage statistics (preferences setting).")
+            log.info("因用户设置，使用统计信息未被上传")
             return
         if not UsageStatistics.is_enabled():
-            log.info("Not sending usage statistics (disabled).")
+            log.info("已禁用使用统计信息收集功能")
             return
 
         if settings.contains('reporting/machine-id'):
@@ -317,17 +316,16 @@ def send_usage_statistics():
         try:
             r = requests.post(url, files={'file': json.dumps(data)})
             if r.status_code != 200:
-                log.warning("Error communicating with server while attempting to send "
-                            "usage statistics. Status code %d", r.status_code)
+                log.warning(("发送使用统计信息时服务器通信出错（状态码：%d）" + ""), r.status_code)
                 return
             # success - wipe statistics file
-            log.info("Usage statistics sent.")
+            log.info("使用统计信息已发送")
             with open(UsageStatistics.filename(), 'w', encoding="utf-8") as f:
                 json.dump([], f)
         except (ConnectionError, requests.exceptions.RequestException):
-            log.warning("Connection error while attempting to send usage statistics.")
+            log.warning("尝试发送使用统计信息时发生连接错误")
         except Exception:  # pylint: disable=broad-except
-            log.warning("Failed to send usage statistics.", exc_info=True)
+            log.warning("发送使用统计信息失败", exc_info=True)
 
     class SendUsageStatistics(QThread):
         def run(self):
@@ -335,7 +333,7 @@ def send_usage_statistics():
                 send_statistics(statistics_server_url)
             except Exception:  # pylint: disable=broad-except
                 # exceptions in threads would crash Orange
-                log.warning("Failed to send usage statistics.")
+                log.warning("发送使用统计信息失败")
 
     thread = SendUsageStatistics()
     thread.start()
@@ -356,11 +354,11 @@ class OMain(Main):
         parser = super().argument_parser()
         parser.add_argument(
             "--clear-widget-settings", action="store_true",
-            help="Clear stored widget setting/defaults",
+            help="重置小部件的已保存设置与默认值",
         )
         parser.add_argument(
             "--clear-all", action="store_true",
-            help="Clear all settings and caches"
+            help="重置所有设置并清除缓存"
         )
         return parser
 
@@ -370,26 +368,26 @@ class OMain(Main):
 
     @staticmethod
     def _rm_tree(path):
-        log.debug("rmtree '%s'", path)
+        log.debug("递归删除 '%s'", path)
         shutil.rmtree(path, ignore_errors=True)
 
     def clear_widget_settings(self):
-        log.info("Clearing widget settings")
+        log.info("正在清除小部件设置")
         self._rm_tree(widget_settings_dir(versioned=True))
         self._rm_tree(widget_settings_dir(versioned=False))
 
     def clear_caches(self):  # pylint: disable=import-outside-toplevel
         from Orange.misc import environ
-        log.info("Clearing caches")
+        log.info("正在清除缓存")
         self._rm_tree(environ.cache_dir())
-        log.info("Clearing data")
+        log.info("正在清除数据")
         self._rm_tree(environ.data_dir(versioned=True))
         self._rm_tree(environ.data_dir(versioned=False))
 
     def clear_application_settings(self):  # pylint: disable=no-self-use
         s = QSettings()
-        log.info("Clearing application settings")
-        log.debug("clear '%s'", s.fileName())
+        log.info("正在清除程序设置")
+        log.debug("清除 '%s'", s.fileName())
         s.clear()
         s.sync()
 
@@ -431,9 +429,9 @@ class OMain(Main):
             bg = p.base().color().name()
             fg = p.windowText().color().name()
 
-            log.info('Setting pyqtgraph background to %s', bg)
+            log.info('将 pyqtgraph 背景设置为 %s', bg)
             pyqtgraph.setConfigOption('background', bg)
-            log.info('Setting pyqtgraph foreground to %s', fg)
+            log.info('将 pyqtgraph 前景设置为 %s', fg)
             pyqtgraph.setConfigOption('foreground', fg)
             app.setProperty('darkMode', p.color(QPalette.Base).value() < 127)
 

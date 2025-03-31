@@ -97,7 +97,7 @@ def log_warnings():
     # currentframe().f_back is `contextmanager`'s __enter__
     frame = inspect.currentframe().f_back.f_back
     if frame in warning_loggers:
-        raise ValueError("nested log_warnings")
+        raise ValueError("嵌套的日志警告")
     try:
         warning_loggers[frame] = []
         yield warning_loggers[frame]
@@ -173,7 +173,7 @@ def deprecated(obj):
             name = func.__name__
             if hasattr(func, "__self__"):
                 name = f'{func.__self__.__class__}.{name}'
-            warnings.warn(f'Call to deprecated {name}{alternative}',
+            warnings.warn(f'调用了已弃用的 {name}，请改用 {alternative}',
                           OrangeDeprecationWarning, stacklevel=2)
             return func(*args, **kwargs)
         return wrapper
@@ -311,7 +311,7 @@ class allot:
         self.last_call_duration = self.__timer() - start
         if self.allotted_time is not None:
             if self.overflow is None:
-                assert result is None, "skippable function cannot return a result"
+                assert result is None, "可跳过函数不能返回结果"
             self.no_call_before = start + self.last_call_duration / self.allotted_time
         return result
 
@@ -369,7 +369,7 @@ def requirementsSatisfied(required_state, local_state, req_type=None):
                 break
 
         if req is None:
-            log.error("Invalid requirement specification: %s", req_string)
+            log.error("找到无效的库依赖格式：%s，请检查拼写或版本号", req_string)
             return False
 
         compare_type = req_type or type(local_state[req.name])

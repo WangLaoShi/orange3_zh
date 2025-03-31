@@ -36,7 +36,7 @@ OFFICIAL_ADDON_LIST = "https://orange.biolab.si/addons/list"
 WIDGETS_ENTRY = "orange.widgets"
 
 spec = [
-    ("startup/check-updates", bool, True, "Check for updates"),
+    ("startup/check-updates", bool, True, "检查更新"),
 
     ("startup/launch-count", int, 0, ""),
 
@@ -46,19 +46,19 @@ spec = [
 
     ("reporting/permission-requested", bool, False, ""),
 
-    ("notifications/check-notifications", bool, True, "Check for notifications"),
+    ("notifications/check-notifications", bool, True, "查看新通知"),
 
     ("notifications/announcements", bool, True,
-     "Show notifications about Biolab announcements"),
+     "显示来自 Biolab 的公告通知"),
 
     ("notifications/blog", bool, True,
-     "Show notifications about blog posts"),
+     "显示博客文章的通知"),
 
     ("notifications/new-features", bool, True,
-     "Show notifications about new features"),
+     "显示新功能的通知"),
 
     ("notifications/displayed", str, 'set()',
-     "Serialized set of notification IDs which have already been displayed")
+     "已显示通知 ID 的序列化集合")
 ]
 
 spec = [config_slot(*t) for t in spec]
@@ -206,8 +206,7 @@ class Config(config.Config):
         "Documentation": "https://orange.biolab.si/widget-catalog/",
         #: YouTube tutorials
         "Screencasts":
-            "https://www.youtube.com/watch"
-            "?v=HXjnDIgGDuI&list=PLmNPvQr9Tf-ZSDLwOzxpvY-HrE0yv-8Fy&index=1",
+            ("https://www.youtube.com/watch" + "?v=HXjnDIgGDuI&list=PLmNPvQr9Tf-ZSDLwOzxpvY-HrE0yv-8Fy&index=1"),
         #: Used for 'Submit Feedback' action in the help menu
         "Feedback": "https://orange.biolab.si/survey/long.html",
     }
@@ -215,7 +214,7 @@ class Config(config.Config):
 
 def init():
     # left for backwards compatibility
-    raise RuntimeError("This is not the init you are looking for.")
+    raise RuntimeError("😄 不是你要找的那个 init（致敬 Star Wars）")
 
 
 def data_dir():
@@ -270,7 +269,7 @@ def widget_settings_dir():
     .. deprecated:: 3.23
     """
     warnings.warn(
-        f"'{__name__}.widget_settings_dir' is deprecated.",
+        f"'{name}.widget_settings_dir' 已被弃用。",
         DeprecationWarning, stacklevel=2
     )
     import orangewidget.settings

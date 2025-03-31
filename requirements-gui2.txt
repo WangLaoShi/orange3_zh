@@ -1,0 +1,6 @@
+AnyQt>=0.2.0
+
+matplotlib>=3.2.0
+pygments>=2.8.0
+pyqtgraph>=0.13.1
+qtconsole>=4.7.2
